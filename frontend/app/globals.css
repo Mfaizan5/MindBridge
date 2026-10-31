@@ -1,0 +1,99 @@
+@import "tailwindcss";
+@import "tw-animate-css";
+@import "shadcn/tailwind.css";
+
+/*
+ * Design tokens from docs/requirements-traceability.md §2 (source brief palette).
+ * shadcn/ui components read the semantic variables below, so they are mapped onto the palette.
+ */
+@theme inline {
+  --color-lavender: #e9e5ff;
+  --color-mint: #cdefe1;
+  --color-blush: #f8dde5;
+  --color-sky: #e7f2ff;
+  --color-navy: #172554;
+  --color-navy-soft: #3b4a7a;
+  --color-canvas: #ffffff;
+  --color-danger: #9b1c3a;
+
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --color-card: var(--card);
+  --color-card-foreground: var(--card-foreground);
+  --color-popover: var(--popover);
+  --color-popover-foreground: var(--popover-foreground);
+  --color-primary: var(--primary);
+  --color-primary-foreground: var(--primary-foreground);
+  --color-secondary: var(--secondary);
+  --color-secondary-foreground: var(--secondary-foreground);
+  --color-muted: var(--muted);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-accent: var(--accent);
+  --color-accent-foreground: var(--accent-foreground);
+  --color-destructive: var(--destructive);
+  --color-border: var(--border);
+  --color-input: var(--input);
+  --color-ring: var(--ring);
+
+  --font-sans: var(--font-inter), ui-sans-serif, system-ui, sans-serif;
+  --font-heading:
+    var(--font-poppins), var(--font-inter), ui-sans-serif, system-ui, sans-serif;
+
+  --radius-card: 14px;
+  --radius-sm: calc(var(--radius) * 0.6);
+  --radius-md: calc(var(--radius) * 0.8);
+  --radius-lg: var(--radius);
+  --radius-xl: calc(var(--radius) * 1.4);
+}
+
+:root {
+  color-scheme: light;
+  --background: #ffffff;
+  --foreground: #172554;
+  --card: #ffffff;
+  --card-foreground: #172554;
+  --popover: #ffffff;
+  --popover-foreground: #172554;
+  --primary: #172554;
+  --primary-foreground: #ffffff;
+  --secondary: #e9e5ff;
+  --secondary-foreground: #172554;
+  --muted: #e7f2ff;
+  --muted-foreground: #3b4a7a;
+  --accent: #cdefe1;
+  --accent-foreground: #172554;
+  --destructive: #9b1c3a;
+  --border: rgb(23 37 84 / 0.12);
+  --input: rgb(23 37 84 / 0.22);
+  --ring: #172554;
+  --radius: 0.75rem;
+}
+
+@layer base {
+  * {
+    @apply border-border outline-ring/50;
+  }
+  body {
+    @apply bg-background text-foreground font-sans antialiased;
+  }
+  h1,
+  h2,
+  h3 {
+    font-family: var(--font-heading);
+  }
+}
+
+:focus-visible {
+  outline: 3px solid var(--color-navy);
+  outline-offset: 2px;
+  border-radius: 6px;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    transition-duration: 0.01ms !important;
+  }
+}
