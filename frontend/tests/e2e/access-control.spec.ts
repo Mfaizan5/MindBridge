@@ -1,5 +1,5 @@
 import { expect, test } from "@playwright/test";
-import { demoSignIn } from "./helpers";
+import { demoLogin, uniqueEmail, signUp } from "./helpers";
 
 test("logged-out visitors are sent to log in, and the destination is kept", async ({
   page,
@@ -11,8 +11,7 @@ test("logged-out visitors are sent to log in, and the destination is kept", asyn
 test("a student cannot open administrator pages, and is sent to their own home", async ({
   page,
 }) => {
-  await demoSignIn(page, "Demo student");
-  await expect(page).toHaveURL(/\/dashboard$/);
+  await demoLogin(page, "student@mindbridge.demo", "Student");
   await page.goto("/admin/users");
   await expect(page).toHaveURL(/\/dashboard$/);
 });
@@ -20,32 +19,25 @@ test("a student cannot open administrator pages, and is sent to their own home",
 test("a psychologist cannot open the student journal page", async ({
   page,
 }) => {
-  await demoSignIn(page, "Demo psychologist");
-  await expect(page).toHaveURL(/\/psychologist\/workspace$/);
+  await demoLogin(page, "amara@mindbridge.demo", "Psychologist");
   await page.goto("/journal");
   await expect(page).toHaveURL(/\/psychologist\/workspace$/);
 });
 
-test("an expired session is ended and the user is told why", async ({
+test("a wrong password is refused with a generic message", async ({ page }) => {
+  await page.goto("/login");
+  await page.locator("#email").fill("student@mindbridge.demo");
+  await page.locator("#password").fill("not the password");
+  await page.getByRole("button", { name: "Log in" }).click();
+  await expect(page.getByText("Email or password is incorrect.")).toBeVisible();
+});
+
+test("clearing the session cookie signs the user out and protects the page", async ({
   page,
+  context,
 }) => {
-  await demoSignIn(page, "Demo student");
-  await expect(page).toHaveURL(/\/dashboard$/);
-  await page.evaluate(() => {
-    const raw = window.localStorage.getItem("mindbridge:v2:session");
-    if (!raw) throw new Error("no session stored");
-    const session = JSON.parse(raw);
-    session.lastActiveAt = new Date(
-      Date.now() - 2 * 60 * 60 * 1000,
-    ).toISOString();
-    window.localStorage.setItem(
-      "mindbridge:v2:session",
-      JSON.stringify(session),
-    );
-  });
-  await page.reload();
-  await expect(page).toHaveURL(/\/login/);
-  await expect(
-    page.getByText("Your session ended after 30 minutes without activity."),
-  ).toBeVisible();
+  await signUp(page, "Session Student", uniqueEmail("session"));
+  await context.clearCookies();
+  await page.goto("/dashboard");
+  await expect(page).toHaveURL(/\/login\?next=%2Fdashboard/);
 });

@@ -56,8 +56,8 @@ export default function AvailabilityPage() {
       `${a.date}${a.startTime}`.localeCompare(`${b.date}${b.startTime}`),
     );
 
-  const add = handleSubmit((values) => {
-    const result = actions.addSlot(values);
+  const add = handleSubmit(async (values) => {
+    const result = await actions.addSlot(values);
     if (result.ok) {
       setNotice({
         tone: "success",
@@ -172,8 +172,8 @@ export default function AvailabilityPage() {
                       title="Remove this time?"
                       description="Students will no longer be able to book this time."
                       confirmLabel="Remove time"
-                      onConfirm={() => {
-                        const result = actions.removeSlot(slot.id);
+                      onConfirm={async () => {
+                        const result = await actions.removeSlot(slot.id);
                         setNotice(
                           result.ok
                             ? { tone: "success", text: "Time removed." }

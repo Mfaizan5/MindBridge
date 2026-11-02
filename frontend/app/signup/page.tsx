@@ -4,18 +4,21 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
-import { Controller, useForm } from "react-hook-form";
-import { Button } from "@/components/ui/button";
-import { Checkbox } from "@/components/ui/checkbox";
-import { AuthLayout } from "@/components/layout/auth-layout";
+import { Controller, useForm, useWatch } from "react-hook-form";
 import { FormField, controlA11y } from "@/components/common/form-field";
 import { Notice } from "@/components/common/notice";
+import { AuthLayout } from "@/components/layout/auth-layout";
+import { Button } from "@/components/ui/button";
+import { Checkbox } from "@/components/ui/checkbox";
 import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { useStore } from "@/lib/store";
 import { signUpSchema, type SignUpValues } from "@/lib/schemas/auth";
 
-// Collects only name and email as profile data (VR-13). The password is a credential, not profile data.
-// Accounts are always created as students. Privileged roles are never self-assigned (VR-12).
+// Collects name and email as profile data (VR-13). The password is sent to the server, which stores only a hash.
+// Students and psychologists can register here. Administrator accounts cannot be self-created (VR-12).
+// A psychologist account is unverified until an administrator checks the credentials.
 
 export default function SignupPage() {
   const router = useRouter();
@@ -24,19 +27,35 @@ export default function SignupPage() {
 
   const form = useForm<SignUpValues>({
     resolver: zodResolver(signUpSchema),
-    defaultValues: { name: "", email: "", password: "", terms: false },
+    defaultValues: {
+      role: "student",
+      name: "",
+      email: "",
+      password: "",
+      terms: false,
+    },
   });
   const { register, handleSubmit, formState, control } = form;
   const errors = formState.errors;
+  const role = useWatch({ control, name: "role" });
 
-  const submit = handleSubmit((values) => {
+  const submit = handleSubmit(async (values) => {
     setFormError(null);
-    const result = actions.signUp({ name: values.name, email: values.email });
+    const result = await actions.signUp({
+      name: values.name,
+      email: values.email,
+      password: values.password,
+      role: values.role,
+    });
     if (!result.ok) {
       setFormError(result.error);
       return;
     }
-    router.push("/dashboard");
+    router.push(
+      result.value.role === "psychologist"
+        ? "/psychologist/workspace"
+        : "/dashboard",
+    );
   });
 
   return (
@@ -57,6 +76,54 @@ export default function SignupPage() {
     >
       <form onSubmit={submit} noValidate className="space-y-5">
         {formError && <Notice tone="error">{formError}</Notice>}
+
+        <fieldset className="space-y-3">
+          <legend className="text-sm font-medium">I am a</legend>
+          <Controller
+            name="role"
+            control={control}
+            render={({ field }) => (
+              <RadioGroup
+                value={field.value}
+                onValueChange={(value) => field.onChange(value)}
+                className="grid gap-2"
+              >
+                {[
+                  { value: "student", label: "Student" },
+                  { value: "psychologist", label: "Psychologist" },
+                ].map((option) => (
+                  <div
+                    key={option.value}
+                    className="flex min-h-11 items-center gap-3"
+                  >
+                    <RadioGroupItem
+                      id={`role-${option.value}`}
+                      value={option.value}
+                    />
+                    <Label
+                      htmlFor={`role-${option.value}`}
+                      className="font-normal"
+                    >
+                      {option.label}
+                    </Label>
+                  </div>
+                ))}
+              </RadioGroup>
+            )}
+          />
+          {role === "psychologist" && (
+            <p className="text-sm text-navy-soft">
+              After sign-up you will add your qualifications. Your profile is
+              shown to students only after an administrator has verified it.
+            </p>
+          )}
+          {errors.role && (
+            <p id="role-error" className="text-sm font-medium text-danger">
+              {errors.role.message}
+            </p>
+          )}
+        </fieldset>
+
         <FormField id="name" label="Name" error={errors.name?.message}>
           <Input
             autoComplete="name"

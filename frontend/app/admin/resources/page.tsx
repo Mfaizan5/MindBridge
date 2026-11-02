@@ -65,12 +65,12 @@ export default function AdminResourcesPage() {
     reset(target === "new" ? blank : fromResource(target));
   };
 
-  const save = handleSubmit((values) => {
+  const save = handleSubmit(async (values) => {
     const body = values.body
       .split(/\n\s*\n/)
       .map((p) => p.trim())
       .filter(Boolean);
-    const result = actions.saveResource({
+    const result = await actions.saveResource({
       id: editing && editing !== "new" ? editing.id : undefined,
       title: values.title,
       category: values.category,

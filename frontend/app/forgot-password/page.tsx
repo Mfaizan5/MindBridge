@@ -4,21 +4,23 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import Link from "next/link";
 import { useState } from "react";
 import { useForm } from "react-hook-form";
-import { Button } from "@/components/ui/button";
-import { AuthLayout } from "@/components/layout/auth-layout";
 import { FormField, controlA11y } from "@/components/common/form-field";
 import { Notice } from "@/components/common/notice";
+import { AuthLayout } from "@/components/layout/auth-layout";
+import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { api } from "@/lib/api/client";
 import {
   forgotPasswordSchema,
   type ForgotPasswordValues,
 } from "@/lib/schemas/auth";
 
-// Reset delivery needs the backend and an email provider (A-12). This page only confirms the request
-// without revealing whether an account exists, which avoids account enumeration.
+// The server answers the same way whether or not the account exists. In development the reset link is written to the
+// backend log, because email delivery is not configured (A-12).
 
 export default function ForgotPasswordPage() {
   const [sent, setSent] = useState(false);
+  const [error, setError] = useState<string | null>(null);
   const form = useForm<ForgotPasswordValues>({
     resolver: zodResolver(forgotPasswordSchema),
     defaultValues: { email: "" },
@@ -26,7 +28,21 @@ export default function ForgotPasswordPage() {
   const { register, handleSubmit, formState } = form;
   const errors = formState.errors;
 
-  const submit = handleSubmit(() => setSent(true));
+  const submit = handleSubmit(async (values) => {
+    setError(null);
+    try {
+      await api("POST", "/auth/password-reset/request", {
+        email: values.email,
+      });
+      setSent(true);
+    } catch (err) {
+      setError(
+        err instanceof Error
+          ? err.message
+          : "Something went wrong. Please try again.",
+      );
+    }
+  });
 
   return (
     <AuthLayout
@@ -48,6 +64,7 @@ export default function ForgotPasswordPage() {
         </Notice>
       ) : (
         <form onSubmit={submit} noValidate className="space-y-5">
+          {error && <Notice tone="error">{error}</Notice>}
           <FormField id="email" label="Email" error={errors.email?.message}>
             <Input
               type="email"

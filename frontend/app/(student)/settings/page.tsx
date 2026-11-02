@@ -43,8 +43,8 @@ export default function SettingsPage() {
   const { register, handleSubmit, formState } = form;
   const errors = formState.errors;
 
-  const save = handleSubmit((values) => {
-    const result = actions.updateAccount(values);
+  const save = handleSubmit(async (values) => {
+    const result = await actions.updateAccount(values);
     setNotice(
       result.ok
         ? { tone: "success", text: "Your details are saved." }
@@ -78,8 +78,8 @@ export default function SettingsPage() {
     URL.revokeObjectURL(url);
   };
 
-  const removeAccount = () => {
-    const result = actions.deleteAccount();
+  const removeAccount = async () => {
+    const result = await actions.deleteAccount();
     if (result.ok) router.push("/");
     else setNotice({ tone: "error", text: result.error });
   };
@@ -160,8 +160,8 @@ export default function SettingsPage() {
                         <Checkbox
                           id={id}
                           checked={isGranted(scope, p.id)}
-                          onCheckedChange={(checked) => {
-                            const result = actions.setConsent(
+                          onCheckedChange={async (checked) => {
+                            const result = await actions.setConsent(
                               scope,
                               p.id,
                               checked === true,
@@ -209,7 +209,10 @@ export default function SettingsPage() {
             <CardTitle>Account</CardTitle>
           </CardHeader>
           <CardContent className="space-y-4">
-            <Button variant="outline" onClick={() => actions.signOut()}>
+            <Button
+              variant="outline"
+              onClick={async () => await actions.signOut()}
+            >
               Log out
             </Button>
             <div className="border-t border-border pt-4">

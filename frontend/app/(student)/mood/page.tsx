@@ -93,7 +93,7 @@ function MoodTracker() {
     reset(emptyValues(null));
   };
 
-  const submit = handleSubmit((values) => {
+  const submit = handleSubmit(async (values) => {
     setActionError(null);
     const input = {
       mood: values.mood,
@@ -105,7 +105,7 @@ function MoodTracker() {
     };
     // Confirmation appears only after the save has succeeded (VR-07).
     if (editingId) {
-      const result = actions.updateMood(editingId, input);
+      const result = await actions.updateMood(editingId, input);
       if (!result.ok) return setActionError(result.error);
       setSaved({
         id: editingId,
@@ -115,7 +115,7 @@ function MoodTracker() {
       reset(emptyValues(null));
       return;
     }
-    const result = actions.addMood(input);
+    const result = await actions.addMood(input);
     if (!result.ok) {
       setActionError(result.error);
       return;
@@ -358,8 +358,8 @@ function MoodTracker() {
                     title="Delete this check-in?"
                     description="This removes the check-in from your history and charts. It cannot be undone."
                     confirmLabel="Delete check-in"
-                    onConfirm={() => {
-                      const result = actions.deleteMood(record.id);
+                    onConfirm={async () => {
+                      const result = await actions.deleteMood(record.id);
                       if (!result.ok) setActionError(result.error);
                       if (editingId === record.id) cancelEdit();
                     }}

@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 
 import {
   Bell,
@@ -149,18 +149,14 @@ function ShellFrame({ role, children }: { role: Role; children: ReactNode }) {
   const unread =
     role === "student" ? mine.notifications.filter((n) => !n.read).length : 0;
 
-  const signOut = () => {
-    actions.signOut();
+  const signOut = async () => {
+    await actions.signOut();
     router.push("/login");
   };
 
   return (
-    <div
-      className="flex min-h-dvh flex-1 flex-col lg:flex-row"
-      onPointerDown={() => actions.touch()}
-      onKeyDown={() => actions.touch()}
-    >
-      <aside className="sticky top-0 hidden h-dvh w-60 shrink-0 flex-col justify-between border-r border-border bg-white p-5 lg:flex">
+    <div className="flex min-h-dvh flex-1 flex-col lg:flex-row">
+      <aside className="sticky top-0 hidden h-dvh w-60 shrink-0 flex-col justify-between overflow-y-auto border-r border-border bg-white p-5 lg:flex">
         <div className="space-y-8">
           <Logo />
           <nav aria-label="Main">
@@ -240,6 +236,15 @@ function ShellFrame({ role, children }: { role: Role; children: ReactNode }) {
               </Link>
             )}
             <span className="text-xs text-navy-soft">{LABEL[role]}</span>
+            <button
+              type="button"
+              onClick={signOut}
+              aria-label="Log out"
+              title="Log out"
+              className="grid min-h-11 min-w-11 place-items-center rounded-full hover:bg-navy/5"
+            >
+              <LogOut className="size-5" aria-hidden="true" />
+            </button>
           </div>
         </header>
 

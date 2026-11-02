@@ -1,7 +1,7 @@
 "use client";
 
 import { useParams } from "next/navigation";
-import { useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { ButtonLink } from "@/components/common/button-link";
 import { ConfirmDialog } from "@/components/common/confirm-dialog";
 import { EmptyState } from "@/components/common/empty-state";
@@ -10,41 +10,107 @@ import { PageHeader } from "@/components/common/page-header";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { hasConsent } from "@/lib/domain/actions";
-import { appointmentViews } from "@/lib/selectors";
+import { api } from "@/lib/api/client";
 import { useStore } from "@/lib/store";
-import { average, filterByRange, round1 } from "@/lib/stats";
-import { formatDate, localDateKey } from "@/lib/validation";
+import { formatDate } from "@/lib/validation";
 
-// Appointment details for the psychologist. Least privilege (VR-18):
-// - Student identity is shown only with "Appointment history" consent.
-// - Mood information is shown only as a 30-day summary, and only with "Mood records" consent. Individual entries and the journal are never shown.
+// Appointment details for the psychologist. The server decides what is shown (least privilege):
+// the student's identity only with "Appointment history" consent, and a 30-day mood summary only with "Mood records" consent.
+
+type Detail = {
+  appointment: {
+    id: string;
+    status: string;
+    starts_at: string;
+    ends_at: string;
+    psychologist_name: string;
+  };
+  student: { name: string; email: string } | null;
+  mood_summary: {
+    count: number;
+    average_stress: number | null;
+    average_sleep_hours: number | null;
+  } | null;
+  started: boolean;
+};
+
+const pad = (n: number) => String(n).padStart(2, "0");
+const localDate = (d: Date) =>
+  `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}`;
+const localTime = (d: Date) => `${pad(d.getHours())}:${pad(d.getMinutes())}`;
 
 export default function PsychologistAppointmentDetailPage() {
   const { id } = useParams<{ id: string }>();
-  const { data, myPsychologist, actions } = useStore();
+  const { actions, myPsychologist } = useStore();
+  const [detail, setDetail] = useState<Detail | null>(null);
+  const [loadError, setLoadError] = useState<string | null>(null);
   const [notice, setNotice] = useState<{
     tone: "success" | "error";
     text: string;
   } | null>(null);
-  const now = new Date();
 
-  if (!myPsychologist)
+  // The server reports whether the appointment has started, so the browser clock is not needed while rendering.
+  const load = useCallback(async () => {
+    try {
+      const body = await api<Omit<Detail, "started"> & { started?: boolean }>(
+        "GET",
+        `/appointments/psychologist/${id}`,
+      );
+      setDetail({
+        ...body,
+        started: new Date(body.appointment.starts_at).getTime() <= Date.now(),
+      });
+      setLoadError(null);
+    } catch (err) {
+      setDetail(null);
+      setLoadError(
+        err instanceof Error
+          ? err.message
+          : "This appointment could not be loaded.",
+      );
+    }
+  }, [id]);
+
+  useEffect(() => {
+    let active = true;
+    api<Omit<Detail, "started">>("GET", `/appointments/psychologist/${id}`)
+      .then((body) => {
+        if (active)
+          setDetail({
+            ...body,
+            started:
+              new Date(body.appointment.starts_at).getTime() <= Date.now(),
+          });
+      })
+      .catch((err: unknown) => {
+        if (active)
+          setLoadError(
+            err instanceof Error
+              ? err.message
+              : "This appointment could not be loaded.",
+          );
+      });
+    return () => {
+      active = false;
+    };
+  }, [id]);
+
+  if (!myPsychologist) {
     return (
       <EmptyState
         title="No profile linked"
         body="Your account is not linked to a psychologist profile yet."
       />
     );
-
-  const appointment = data.appointments.find(
-    (a) => a.id === id && a.psychologistId === myPsychologist.id,
-  );
-  if (!appointment) {
+  }
+  if (!detail) {
     return (
       <EmptyState
         title="Appointment not found"
-        body="This appointment does not exist, or it is not one of yours."
+        body={
+          loadError ??
+          "This appointment does not exist, or it is not one of yours."
+        }
         action={
           <ButtonLink
             href="/psychologist/workspace/appointments"
@@ -57,37 +123,20 @@ export default function PsychologistAppointmentDetailPage() {
     );
   }
 
-  const view = appointmentViews(data, [appointment], now)[0];
-  const student = data.users.find((u) => u.id === appointment.studentId);
-  const shareIdentity = hasConsent(
-    data,
-    appointment.studentId,
-    "Appointment history",
-    myPsychologist.id,
-  );
-  const shareMood = hasConsent(
-    data,
-    appointment.studentId,
-    "Mood records",
-    myPsychologist.id,
-  );
-  const recentMoods = filterByRange(
-    data.moods.filter((m) => m.ownerId === appointment.studentId),
-    "30d",
-    localDateKey(now),
-  );
-  const started = view ? view.startsAt.getTime() <= now.getTime() : false;
+  const appointment = detail.appointment;
+  const start = new Date(appointment.starts_at);
 
-  const change = (next: "Confirmed" | "Completed" | "Cancelled") => {
+  const change = async (next: "Confirmed" | "Completed" | "Cancelled") => {
     const result =
       next === "Cancelled"
-        ? actions.cancelAppointment(appointment.id)
-        : actions.setAppointmentStatus(appointment.id, next);
+        ? await actions.cancelAppointment(appointment.id)
+        : await actions.setAppointmentStatus(appointment.id, next);
     setNotice(
       result.ok
         ? { tone: "success", text: `Appointment ${next.toLowerCase()}.` }
         : { tone: "error", text: result.error },
     );
+    await load();
   };
 
   return (
@@ -102,11 +151,7 @@ export default function PsychologistAppointmentDetailPage() {
         </ButtonLink>
       </div>
       <PageHeader
-        title={
-          view
-            ? `${formatDate(view.slot.date)}, ${view.slot.startTime} – ${view.slot.endTime}`
-            : "Appointment"
-        }
+        title={`${formatDate(localDate(start))}, ${localTime(start)}`}
         description="Review the booking and update its status."
         action={<Badge variant="outline">{appointment.status}</Badge>}
       />
@@ -125,13 +170,15 @@ export default function PsychologistAppointmentDetailPage() {
             <CardTitle>Student</CardTitle>
           </CardHeader>
           <CardContent className="space-y-2 text-sm">
-            {shareIdentity && student ? (
+            {detail.student ? (
               <>
                 <p>
-                  <span className="text-navy-soft">Name:</span> {student.name}
+                  <span className="text-navy-soft">Name:</span>{" "}
+                  {detail.student.name}
                 </p>
                 <p>
-                  <span className="text-navy-soft">Email:</span> {student.email}
+                  <span className="text-navy-soft">Email:</span>{" "}
+                  {detail.student.email}
                 </p>
               </>
             ) : (
@@ -148,23 +195,20 @@ export default function PsychologistAppointmentDetailPage() {
             <CardTitle>Shared mood summary</CardTitle>
           </CardHeader>
           <CardContent className="space-y-2 text-sm">
-            {shareMood ? (
-              recentMoods.length === 0 ? (
-                <p className="text-navy-soft">
-                  No check-ins in the last 30 days.
-                </p>
-              ) : (
-                <p>
-                  Last 30 days: {recentMoods.length} check-ins, average stress{" "}
-                  {round1(average(recentMoods.map((m) => m.stress)))} out of 10,
-                  average sleep{" "}
-                  {round1(average(recentMoods.map((m) => m.sleepHours)))} hours.
-                  Summary only, shared by the student.
-                </p>
-              )
-            ) : (
+            {detail.mood_summary === null ? (
               <p className="text-navy-soft">
                 Mood information has not been shared with you.
+              </p>
+            ) : detail.mood_summary.count === 0 ? (
+              <p className="text-navy-soft">
+                No check-ins in the last 30 days.
+              </p>
+            ) : (
+              <p>
+                Last 30 days: {detail.mood_summary.count} check-ins, average
+                stress {detail.mood_summary.average_stress} out of 10, average
+                sleep {detail.mood_summary.average_sleep_hours} hours. Summary
+                only, shared by the student.
               </p>
             )}
           </CardContent>
@@ -181,7 +225,10 @@ export default function PsychologistAppointmentDetailPage() {
               </Button>
             )}
             {appointment.status === "Confirmed" && (
-              <Button disabled={!started} onClick={() => change("Completed")}>
+              <Button
+                disabled={!detail.started}
+                onClick={() => change("Completed")}
+              >
                 Mark completed
               </Button>
             )}
@@ -195,7 +242,7 @@ export default function PsychologistAppointmentDetailPage() {
                 onConfirm={() => change("Cancelled")}
               />
             )}
-            {appointment.status === "Confirmed" && !started && (
+            {appointment.status === "Confirmed" && !detail.started && (
               <p className="w-full text-sm text-navy-soft">
                 You can mark the appointment completed once it has started.
               </p>

@@ -1,43 +1,35 @@
 # MindBridge frontend
 
-Next.js (App Router) frontend for the MindBridge student wellbeing platform. The backend is not built yet: all data is stored in the browser for demonstration. See [`../docs/frontend-status.md`](../docs/frontend-status.md) for what is done and what is not.
+Next.js 16 (App Router) with React 19, TypeScript, Tailwind CSS, shadcn/ui, React Hook Form, Zod and Recharts.
 
-## Requirements
+The frontend needs the backend running on `http://127.0.0.1:8000`. Requests to `/api/v1` are forwarded there by `next.config.ts` (set `API_ORIGIN` to use another address).
 
-- Node.js 24 or later, npm
-- Windows PowerShell or any shell
-
-## Setup
-
-```powershell
-cd E:\zain_project\mindbridge\frontend
-npm install
-```
+Full setup, including the database and the backend, is in [`../docs/setup-guide.md`](../docs/setup-guide.md).
 
 ## Commands
 
 | Command | What it does |
 |---|---|
+| `npm install` | Install dependencies |
 | `npm run dev` | Development server at http://localhost:3000 |
 | `npm run build` | Production build (also type-checks) |
-| `npm run start` | Serves the production build (needed for the end-to-end tests) |
+| `npm run start` | Serve the production build (needed by the end-to-end tests) |
 | `npm run typecheck` | TypeScript strict check |
 | `npm run lint` | ESLint |
 | `npm run test` | Unit tests (Vitest) |
-| `npm run test:e2e` | Browser tests (Playwright). Run `npm run build` first. |
+| `npm run test:e2e` | End-to-end tests (Playwright). Stop servers on ports 3000 and 8000 first. Run `npm run build` first. |
 | `npm run check` | Typecheck, lint, unit tests and build in sequence |
 
-First-time Playwright setup: `npx playwright install chromium`.
+First time only, install the browser for the end-to-end tests: `npx playwright install chromium`.
 
-## Layout
+## Where things are
 
 - `app/`: routes. `(student)/`, `admin/` and `psychologist/workspace/` have role-checked layouts.
-- `components/ui/`: shadcn/ui components. `components/common/`: shared app components. `components/layout/`: navigation shell. `components/charts/`: charts.
-- `lib/domain/`: pure business rules (booking, cancellation, consent, verification). Unit-tested.
-- `lib/schemas/`: Zod validation for forms. `lib/store.tsx`: browser state and session.
-- `lib/seed.ts`: **development demo data only** (fictional people, demo accounts).
-- `tests/unit/`, `tests/e2e/`: tests.
+- `lib/api/client.ts`: the only place that calls the API.
+- `lib/store.tsx`: loads the data for the signed-in role and exposes the actions screens use.
+- `lib/schemas/`: form validation (the server validates again).
+- `tests/e2e/`: browser tests; `global-setup.ts` resets and seeds the test database before each run.
 
-## Demo accounts
+## Accounts
 
-Shown on the login page: `student@mindbridge.demo`, `amara@mindbridge.demo` (psychologist) and `admin@mindbridge.demo`. Login does not check passwords yet. Remove the demo accounts before any real use.
+Development accounts are listed in the setup guide. Their passwords come from `backend/.env`. Nothing in this folder contains a password.

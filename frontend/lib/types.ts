@@ -1,4 +1,4 @@
-export type Role = "student" | "psychologist" | "admin";
+﻿export type Role = "student" | "psychologist" | "admin";
 
 export const MOOD_OPTIONS = [
   "Happy",
@@ -14,6 +14,8 @@ export type UserStatus = "active" | "suspended";
 // Accounts. No password is stored in the frontend; real credentials arrive with the backend (Phase 4).
 export type ManagedUser = {
   id: string;
+  // pbkdf2 hash of the password (see lib/auth/password.ts). Absent for demo accounts that accept any password.
+  passwordHash?: string;
   name: string;
   email: string;
   role: Role;
@@ -167,3 +169,19 @@ export const CONSENT_SCOPES = [
   "Questionnaire results",
   "Appointment history",
 ] as const satisfies readonly ConsentScope[];
+
+// Everything a screen can read. Filled from the API for the signed-in role only (see lib/store.tsx).
+export type AppData = {
+  users: ManagedUser[];
+  moods: MoodRecord[];
+  journal: JournalEntry[];
+  questionnaireResults: QuestionnaireResult[];
+  psychologists: Psychologist[];
+  slots: Slot[];
+  appointments: Appointment[];
+  consents: Consent[];
+  notifications: Notification[];
+  resources: Resource[];
+  audit: AuditEntry[];
+  settings: PlatformSettings;
+};

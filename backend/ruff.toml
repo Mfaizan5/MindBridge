@@ -1,0 +1,13 @@
+﻿line-length = 130
+target-version = "py313"
+
+[lint]
+select = ["E", "F", "I", "B", "UP"]
+# FastAPI's dependency and Query() default-argument pattern is intentional.
+ignore = ["B008"]
+
+[lint.per-file-ignores]
+# These files must set environment variables before importing the application.
+"tests/conftest.py" = ["E402"]
+"scripts/seed_demo.py" = ["E402"]
+"alembic/env.py" = ["E402"]

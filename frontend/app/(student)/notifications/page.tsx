@@ -32,7 +32,7 @@ export default function NotificationsPage() {
           unread > 0 ? (
             <Button
               variant="outline"
-              onClick={() => actions.markNotificationsRead()}
+              onClick={async () => await actions.markNotificationsRead()}
             >
               Mark all as read
             </Button>

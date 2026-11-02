@@ -49,8 +49,8 @@ function AppointmentsContent() {
   const { upcoming, past } = splitUpcoming(views);
   const windowHours = data.settings.cancellationWindowHours;
 
-  const cancel = (id: string) => {
-    const result = actions.cancelAppointment(id);
+  const cancel = async (id: string) => {
+    const result = await actions.cancelAppointment(id);
     setNotice(
       result.ok
         ? {

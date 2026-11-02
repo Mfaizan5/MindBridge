@@ -1,4 +1,4 @@
-import { z } from "zod";
+﻿import { z } from "zod";
 
 // Client-side validation only. The server re-validates every field (Phase 4).
 
@@ -10,11 +10,18 @@ export const emailSchema = z
   .email("Enter a valid email address.");
 
 export const signInSchema = z.object({
+  role: z.enum(["student", "psychologist", "admin"], {
+    error: "Choose student, psychologist or administrator.",
+  }),
   email: emailSchema,
   password: z.string().min(1, "Enter your password."),
 });
 
 export const signUpSchema = z.object({
+  // Administrator accounts are never offered here. Psychologist accounts are unverified until an administrator checks them.
+  role: z.enum(["student", "psychologist"], {
+    error: "Choose student or psychologist.",
+  }),
   name: z
     .string()
     .trim()

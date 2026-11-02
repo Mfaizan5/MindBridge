@@ -31,7 +31,6 @@ export default function AdminOverviewPage() {
         0,
       ),
     },
-    { label: "Appointments", value: data.appointments.length },
   ];
 
   return (

@@ -102,9 +102,9 @@ export default function VerificationPage() {
                           <Button
                             size="sm"
                             variant="outline"
-                            onClick={() =>
+                            onClick={async () =>
                               report(
-                                actions.setQualificationStatus(
+                                await actions.setQualificationStatus(
                                   p.id,
                                   q.id,
                                   "Verified",
@@ -120,9 +120,9 @@ export default function VerificationPage() {
                           <Button
                             size="sm"
                             variant="outline"
-                            onClick={() =>
+                            onClick={async () =>
                               report(
-                                actions.setQualificationStatus(
+                                await actions.setQualificationStatus(
                                   p.id,
                                   q.id,
                                   "Rejected",
@@ -146,18 +146,18 @@ export default function VerificationPage() {
                       title={`Remove verification for ${p.name}?`}
                       description="The verified badge will be removed from their profile."
                       confirmLabel="Remove verification"
-                      onConfirm={() =>
+                      onConfirm={async () =>
                         report(
-                          actions.setPsychologistVerified(p.id, false),
+                          await actions.setPsychologistVerified(p.id, false),
                           `Verification removed for ${p.name}.`,
                         )
                       }
                     />
                   ) : (
                     <Button
-                      onClick={() =>
+                      onClick={async () =>
                         report(
-                          actions.setPsychologistVerified(p.id, true),
+                          await actions.setPsychologistVerified(p.id, true),
                           `${p.name} is now verified.`,
                         )
                       }
@@ -168,9 +168,9 @@ export default function VerificationPage() {
                   {p.approvedProfile ? (
                     <Button
                       variant="outline"
-                      onClick={() =>
+                      onClick={async () =>
                         report(
-                          actions.setProfilePublished(p.id, false),
+                          await actions.setProfilePublished(p.id, false),
                           `${p.name}'s profile is hidden.`,
                         )
                       }
@@ -181,9 +181,9 @@ export default function VerificationPage() {
                     <Button
                       variant="outline"
                       disabled={!p.verified}
-                      onClick={() =>
+                      onClick={async () =>
                         report(
-                          actions.setProfilePublished(p.id, true),
+                          await actions.setProfilePublished(p.id, true),
                           `${p.name}'s profile is published.`,
                         )
                       }

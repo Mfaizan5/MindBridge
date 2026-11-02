@@ -4,35 +4,25 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
 import { Suspense, useState } from "react";
-import { useForm } from "react-hook-form";
-import { Button } from "@/components/ui/button";
-import { AuthLayout } from "@/components/layout/auth-layout";
+import { Controller, useForm } from "react-hook-form";
 import { FormField, controlA11y } from "@/components/common/form-field";
 import { Notice } from "@/components/common/notice";
+import { AuthLayout } from "@/components/layout/auth-layout";
+import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { useStore } from "@/lib/store";
 import { signInSchema, type SignInValues } from "@/lib/schemas/auth";
 
-// Prototype sign-in: the account must exist, and the password is not checked until the backend (Phase 4) is in place.
-// Demo accounts below exist only in the seeded development data and must be removed before any real deployment.
+// The server checks the password and the role. Accounts are created by students and psychologists at sign-up.
+// Administrator accounts are created by the seed script (development) or by an administrator (later).
 
-const DEMO_ACCOUNTS = [
-  {
-    label: "Demo student",
-    email: "student@mindbridge.demo",
-    home: "/dashboard",
-  },
-  {
-    label: "Demo psychologist",
-    email: "amara@mindbridge.demo",
-    home: "/psychologist/workspace",
-  },
-  {
-    label: "Demo administrator",
-    email: "admin@mindbridge.demo",
-    home: "/admin",
-  },
-];
+const HOME_FOR_ROLE = {
+  student: "/dashboard",
+  psychologist: "/psychologist/workspace",
+  admin: "/admin",
+} as const;
 
 // Only allow same-site relative paths in ?next=, to avoid open redirects.
 const safeNext = (value: string | null) =>
@@ -46,32 +36,26 @@ function LoginForm() {
 
   const form = useForm<SignInValues>({
     resolver: zodResolver(signInSchema),
-    defaultValues: { email: "", password: "" },
+    defaultValues: { role: "student", email: "", password: "" },
   });
-  const { register, handleSubmit, formState } = form;
+  const { register, handleSubmit, formState, control } = form;
   const errors = formState.errors;
 
-  const finish = (fallback: string) =>
-    router.push(safeNext(params.get("next")) ?? fallback);
-
-  const submit = handleSubmit((values) => {
+  const submit = handleSubmit(async (values) => {
     setFormError(null);
-    const result = actions.signIn(values.email);
+    const result = await actions.signIn(
+      values.email,
+      values.role,
+      values.password,
+    );
     if (!result.ok) {
       setFormError(result.error);
       return;
     }
-    finish("/dashboard");
+    router.push(
+      safeNext(params.get("next")) ?? HOME_FOR_ROLE[result.value.role],
+    );
   });
-
-  const signInAsDemo = (email: string, home: string) => {
-    const result = actions.signIn(email);
-    if (!result.ok) {
-      setFormError(result.error);
-      return;
-    }
-    router.push(safeNext(params.get("next")) ?? home);
-  };
 
   return (
     <AuthLayout
@@ -99,6 +83,48 @@ function LoginForm() {
         {formError && <Notice tone="error">{formError}</Notice>}
 
         <form onSubmit={submit} noValidate className="space-y-5">
+          <fieldset className="space-y-3">
+            <legend className="text-sm font-medium">I am a</legend>
+            <Controller
+              name="role"
+              control={control}
+              render={({ field }) => (
+                <RadioGroup
+                  value={field.value}
+                  onValueChange={(value) => field.onChange(value)}
+                  className="grid gap-2"
+                >
+                  {[
+                    { value: "student", label: "Student" },
+                    { value: "psychologist", label: "Psychologist" },
+                    { value: "admin", label: "Administrator" },
+                  ].map((option) => (
+                    <div
+                      key={option.value}
+                      className="flex min-h-11 items-center gap-3"
+                    >
+                      <RadioGroupItem
+                        id={`login-role-${option.value}`}
+                        value={option.value}
+                      />
+                      <Label
+                        htmlFor={`login-role-${option.value}`}
+                        className="font-normal"
+                      >
+                        {option.label}
+                      </Label>
+                    </div>
+                  ))}
+                </RadioGroup>
+              )}
+            />
+            {errors.role && (
+              <p id="role-error" className="text-sm font-medium text-danger">
+                {errors.role.message}
+              </p>
+            )}
+          </fieldset>
+
           <FormField id="email" label="Email" error={errors.email?.message}>
             <Input
               type="email"
@@ -135,28 +161,6 @@ function LoginForm() {
             {formState.isSubmitting ? "Logging in…" : "Log in"}
           </Button>
         </form>
-
-        <div className="border-t border-border pt-6">
-          <p className="mb-1 text-xs font-medium uppercase tracking-wide text-navy-soft">
-            Demo accounts
-          </p>
-          <p className="mb-3 text-sm text-navy-soft">
-            Development data only. Not for real use.
-          </p>
-          <div className="grid gap-2">
-            {DEMO_ACCOUNTS.map((account) => (
-              <Button
-                key={account.email}
-                type="button"
-                variant="secondary"
-                className="w-full"
-                onClick={() => signInAsDemo(account.email, account.home)}
-              >
-                Continue as {account.label}
-              </Button>
-            ))}
-          </div>
-        </div>
       </div>
     </AuthLayout>
   );

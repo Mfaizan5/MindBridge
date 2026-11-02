@@ -6,12 +6,11 @@ import { EmptyState } from "@/components/common/empty-state";
 import { Notice } from "@/components/common/notice";
 import { PageHeader } from "@/components/common/page-header";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { QUESTIONNAIRES } from "@/lib/seed";
 import { useStore } from "@/lib/store";
 import { formatDateTime } from "@/lib/validation";
 
 // SCR-06 Results & Guidance. Non-diagnostic by design (VR-15): no "you need / don't need therapy" statements.
-// Results are visible only to their owner.
+// Results are visible only to their owner. The server returns only the signed-in student's own results.
 
 export default function QuestionnaireResultPage() {
   const { id } = useParams<{ id: string }>();
@@ -24,26 +23,19 @@ export default function QuestionnaireResultPage() {
         title="Result not found"
         body="This result does not exist, or it was removed from your account."
         action={
-          <ButtonLink
-            href="/questionnaire/placeholder-wellbeing"
-            variant="outline"
-          >
-            Back to wellness check
+          <ButtonLink href="/dashboard" variant="outline">
+            Back to dashboard
           </ButtonLink>
         }
       />
     );
   }
 
-  const questionnaire = QUESTIONNAIRES.find(
-    (q) => q.id === result.questionnaireId,
-  );
-
   return (
     <>
       <PageHeader
-        title={questionnaire?.name ?? "Wellness check result"}
-        description={`Completed ${formatDateTime(result.completedAt)} · Questionnaire version ${result.questionnaireVersion}`}
+        title="Wellness check result"
+        description={`Completed ${formatDateTime(result.completedAt)} · Version ${result.questionnaireVersion}`}
       />
       <div className="grid max-w-3xl gap-5">
         <Notice tone="warning">

@@ -48,9 +48,9 @@ export default function BookAppointmentPage() {
   const selected = open.find((s) => s.id === slotId);
   const windowHours = data.settings.cancellationWindowHours;
 
-  const confirm = () => {
+  const confirm = async () => {
     if (!slotId) return;
-    const result = actions.bookSlot(slotId);
+    const result = await actions.bookSlot(slotId);
     if (!result.ok) {
       setError(result.error);
       setSlotId(null);

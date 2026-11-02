@@ -27,3 +27,6 @@ frontend/playwright/.cache/
 .idea/
 Thumbs.db
 .DS_Store
+
+# Local logs
+*.log

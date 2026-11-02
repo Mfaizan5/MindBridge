@@ -90,12 +90,12 @@ export default function PsychologistWorkspacePage() {
   ).length;
   const open = openSlots(data, myPsychologist.id, now).length;
 
-  const saveProfile = profileForm.handleSubmit((values) => {
+  const saveProfile = profileForm.handleSubmit(async (values) => {
     const fee =
       values.fee === ""
         ? null
         : { amount: Number(values.fee), currency: values.currency };
-    const result = actions.updatePsychologistProfile({
+    const result = await actions.updatePsychologistProfile({
       specialization: values.specialization,
       bio: values.bio,
       experienceYears: values.experienceYears,
@@ -109,8 +109,8 @@ export default function PsychologistWorkspacePage() {
     );
   });
 
-  const submitQualification = qualForm.handleSubmit((values) => {
-    const result = actions.submitQualification(values);
+  const submitQualification = qualForm.handleSubmit(async (values) => {
+    const result = await actions.submitQualification(values);
     if (result.ok) {
       setQualNotice({
         tone: "success",

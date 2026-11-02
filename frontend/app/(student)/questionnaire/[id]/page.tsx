@@ -1,7 +1,7 @@
 "use client";
 
 import { useParams, useRouter } from "next/navigation";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { ButtonLink } from "@/components/common/button-link";
 import { EmptyState } from "@/components/common/empty-state";
 import { Notice } from "@/components/common/notice";
@@ -9,44 +9,48 @@ import { PageHeader } from "@/components/common/page-header";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Progress } from "@/components/ui/progress";
-import { QUESTIONNAIRES } from "@/lib/seed";
+import { api } from "@/lib/api/client";
 import { useStore } from "@/lib/store";
 
 // SCR-05 Wellness Questionnaire. One question per screen, with Previous / Next / Submit (VR-14).
-// No reviewed questionnaire is in use yet (A-05), so the seed entry shows its "not available" state.
-// Results are stored with the questionnaire version, but no score is calculated without approved scoring rules.
+// The server only offers approved questionnaires. No reviewed content is in use yet (A-05), so this shows "not available".
 
-type Step = "intro" | "questions";
+type ServerQuestionnaire = {
+  id: string;
+  name: string;
+  version: number;
+  purpose: string;
+  approx_minutes: number;
+  questions: string[];
+  options: string[][];
+};
 
 export default function QuestionnairePage() {
   const { id } = useParams<{ id: string }>();
   const router = useRouter();
   const { actions } = useStore();
-  const questionnaire = QUESTIONNAIRES.find((q) => q.id === id);
+  const [questionnaire, setQuestionnaire] = useState<
+    ServerQuestionnaire | null | "loading"
+  >("loading");
 
-  const [step, setStep] = useState<Step>("intro");
+  const [started, setStarted] = useState(false);
   const [index, setIndex] = useState(0);
   const [answers, setAnswers] = useState<(string | undefined)[]>([]);
   const [error, setError] = useState<string | null>(null);
 
-  if (!questionnaire) {
-    return (
-      <EmptyState
-        title="Questionnaire not found"
-        body="This wellness check does not exist or is no longer available."
-        action={
-          <ButtonLink href="/dashboard" variant="outline">
-            Back to dashboard
-          </ButtonLink>
-        }
-      />
-    );
-  }
+  useEffect(() => {
+    api<ServerQuestionnaire>("GET", `/questionnaires/${id}`)
+      .then(setQuestionnaire)
+      .catch(() => setQuestionnaire(null));
+  }, [id]);
 
-  if (questionnaire.questions.length === 0) {
+  if (questionnaire === "loading")
+    return <p className="text-navy-soft">Loading…</p>;
+
+  if (questionnaire === null || questionnaire.questions.length === 0) {
     return (
       <>
-        <PageHeader title={questionnaire.name} />
+        <PageHeader title="Wellness check" />
         <EmptyState
           title="Not available yet"
           body="No reviewed wellness questionnaire has been added here yet, so this check is not available. Nothing is scored or shown as a result until one has been professionally reviewed."
@@ -65,7 +69,7 @@ export default function QuestionnairePage() {
   const answered = answers[index] !== undefined;
   const isLast = index === count - 1;
 
-  if (step === "intro") {
+  if (!started) {
     return (
       <>
         <PageHeader
@@ -76,7 +80,7 @@ export default function QuestionnairePage() {
           <CardContent className="space-y-4">
             <p>{questionnaire.purpose}</p>
             <ul className="list-disc space-y-1 pl-5 text-sm text-navy-soft">
-              <li>Approximate time: {questionnaire.approxMinutes} minutes.</li>
+              <li>Approximate time: {questionnaire.approx_minutes} minutes.</li>
               <li>Your answers are private to your account.</li>
               <li>
                 This check is not a diagnosis and cannot replace a professional
@@ -87,7 +91,7 @@ export default function QuestionnairePage() {
               onClick={() => {
                 setAnswers(Array(count).fill(undefined));
                 setIndex(0);
-                setStep("questions");
+                setStarted(true);
               }}
             >
               Start
@@ -98,9 +102,17 @@ export default function QuestionnairePage() {
     );
   }
 
-  const submit = () => {
-    const result = actions.saveQuestionnaireResult(
-      questionnaire,
+  const submit = async () => {
+    const result = await actions.saveQuestionnaireResult(
+      {
+        id: questionnaire.id,
+        name: questionnaire.name,
+        version: questionnaire.version,
+        purpose: questionnaire.purpose,
+        approxMinutes: questionnaire.approx_minutes,
+        options: questionnaire.options.flat(),
+        questions: questionnaire.questions,
+      },
       answers.map((a) => a ?? ""),
     );
     if (!result.ok) {
@@ -131,7 +143,7 @@ export default function QuestionnairePage() {
             <legend className="text-lg font-semibold">
               {questionnaire.questions[index]}
             </legend>
-            {questionnaire.options.map((option) => (
+            {(questionnaire.options[index] ?? []).map((option) => (
               <label
                 key={option}
                 className="flex min-h-11 cursor-pointer items-center gap-3 rounded-xl border border-navy/20 px-4 hover:bg-navy/5"

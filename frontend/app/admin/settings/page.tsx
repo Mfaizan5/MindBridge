@@ -37,8 +37,8 @@ export default function AdminSettingsPage() {
   const { register, handleSubmit, formState } = form;
   const errors = formState.errors;
 
-  const save = handleSubmit((values) => {
-    const result = actions.saveSettings(values.cancellationWindowHours);
+  const save = handleSubmit(async (values) => {
+    const result = await actions.saveSettings(values.cancellationWindowHours);
     setNotice(
       result.ok
         ? {

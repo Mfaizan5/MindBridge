@@ -49,15 +49,15 @@ export default function JournalPage() {
     6,
   );
 
-  const submit = handleSubmit((values) => {
+  const submit = handleSubmit(async (values) => {
     // Confirmation appears only after the save has succeeded (VR-07).
     if (editingId) {
-      const result = actions.updateJournal(editingId, values.content);
+      const result = await actions.updateJournal(editingId, values.content);
       if (!result.ok) return setNotice({ tone: "error", text: result.error });
       setNotice({ tone: "success", text: "Entry updated." });
       setEditingId(null);
     } else {
-      const result = actions.addJournal(values.content);
+      const result = await actions.addJournal(values.content);
       if (!result.ok) return setNotice({ tone: "error", text: result.error });
       setNotice({ tone: "success", text: "Entry saved." });
     }
@@ -160,8 +160,8 @@ export default function JournalPage() {
                       title="Delete this journal entry?"
                       description="The entry will be removed permanently. It cannot be recovered."
                       confirmLabel="Delete entry"
-                      onConfirm={() => {
-                        const result = actions.deleteJournal(entry.id);
+                      onConfirm={async () => {
+                        const result = await actions.deleteJournal(entry.id);
                         if (!result.ok)
                           setNotice({ tone: "error", text: result.error });
                         if (editingId === entry.id) cancelEdit();

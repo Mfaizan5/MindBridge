@@ -1,6 +1,8 @@
-import { slotStart } from "./domain/actions";
-import type { AppState } from "./domain/state";
-import type { Appointment, Psychologist, Slot } from "./types";
+﻿import type { AppData, Appointment, Psychologist, Slot } from "./types";
+
+// Local start time of a slot. The API sends instants; slots are displayed in the viewer\x27s local time.
+export const slotStart = (slot: Pick<Slot, "date" | "startTime">) =>
+  new Date(`${slot.date}T${slot.startTime}:00`);
 
 // Read-only joins used by several screens. They take the state and a clock, so they stay pure and testable.
 
@@ -13,7 +15,7 @@ export type AppointmentView = {
 };
 
 export function appointmentViews(
-  state: AppState,
+  state: AppData,
   appointments: Appointment[],
   now: Date,
 ): AppointmentView[] {
@@ -51,8 +53,8 @@ export function splitUpcoming(views: AppointmentView[]) {
 export type ActivityItem = { at: string; label: string; href: string };
 
 export function recentActivity(
-  moods: AppState["moods"],
-  journal: AppState["journal"],
+  moods: AppData["moods"],
+  journal: AppData["journal"],
   views: AppointmentView[],
   limit = 6,
 ): ActivityItem[] {
@@ -78,7 +80,7 @@ export function recentActivity(
 
 // Times a psychologist can still be booked: not taken, and not already started.
 export function openSlots(
-  state: AppState,
+  state: AppData,
   psychologistId: string,
   now: Date,
 ): Slot[] {
