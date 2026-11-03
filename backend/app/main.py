@@ -1,3 +1,5 @@
+from urllib.parse import urlparse
+
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from starlette.middleware.trustedhost import TrustedHostMiddleware
@@ -27,7 +29,10 @@ app.add_middleware(
     allow_methods=["GET", "POST", "PUT", "PATCH", "DELETE"],
     allow_headers=["Content-Type", "X-CSRF-Token"],
 )
-app.add_middleware(TrustedHostMiddleware, allowed_hosts=["localhost", "127.0.0.1", "testserver"])
+# Accept requests only for known hosts: local development, and the host of the frontend (for example the Vercel domain).
+_frontend_host = urlparse(settings.frontend_origin).hostname
+_allowed_hosts = ["localhost", "127.0.0.1", "testserver"] + ([_frontend_host] if _frontend_host else [])
+app.add_middleware(TrustedHostMiddleware, allowed_hosts=_allowed_hosts)
 
 
 @app.middleware("http")
