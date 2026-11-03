@@ -1,6 +1,6 @@
 # MindBridge
 
-MindBridge helps university students track everyday wellbeing and, when they choose, connect with verified psychologists. It is a wellness and support platform. It does not diagnose, treat, or replace clinical care or emergency services.
+MindBridge helps university students track everyday wellbeing and, when they choose, connect with verified psychologists. It is a wellness and support platform. It does not diagnose, treat, or replace clinical care or emergency services..
 
 ## What is included
 
