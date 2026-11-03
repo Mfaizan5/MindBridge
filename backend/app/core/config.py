@@ -1,6 +1,6 @@
 from functools import lru_cache
 
-from pydantic import Field
+from pydantic import Field, field_validator
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
 
@@ -14,6 +14,19 @@ class Settings(BaseSettings):
         ...,
         description="SQLAlchemy URL, e.g. postgresql+psycopg://user:pass@host:5432/db",
     )
+
+    @field_validator("database_url")
+    @classmethod
+    def use_psycopg_driver(cls, value: str) -> str:
+        """Hosting providers (for example Neon on Vercel) give postgresql:// URLs.
+
+        Use the psycopg 3 driver the application is built for.
+        """
+        for plain in ("postgresql://", "postgres://"):
+            if value.startswith(plain):
+                return "postgresql+psycopg://" + value[len(plain) :]
+        return value
+
     frontend_origin: str = "http://localhost:3000"
 
     # Sessions: idle timeout and absolute lifetime (master prompt Phase 4).
