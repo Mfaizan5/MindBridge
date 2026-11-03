@@ -9,7 +9,7 @@ MindBridge helps university students track everyday wellbeing and, when they cho
 - **Administrators:** account management (suspend and reactivate), psychologist verification and publication, qualification review, resource management, the cancellation-window setting, and an audit log of every sensitive action.
 - **Security:** Argon2 password hashing, server-side sessions in HTTP-only cookies, CSRF protection, rate limiting, role and ownership checks on every endpoint, and database-level constraints for booking and availability.
 
-## Repository layout
+## Repository layout..
 
 | Folder | Purpose |
 |---|---|
