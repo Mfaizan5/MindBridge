@@ -6,15 +6,23 @@
  * Design tokens from docs/requirements-traceability.md §2 (source brief palette).
  * shadcn/ui components read the semantic variables below, so they are mapped onto the palette.
  */
+/*
+ * Palette colours are variables so dark mode can remap them (see .dark below).
+ * In dark mode "white" becomes the surface colour and "navy" becomes the ink colour,
+ * so existing classes such as bg-white, text-navy and bg-navy text-white still read correctly.
+ */
+@custom-variant dark (&:where(.dark, .dark *));
+
 @theme inline {
-  --color-lavender: #e9e5ff;
-  --color-mint: #cdefe1;
-  --color-blush: #f8dde5;
-  --color-sky: #e7f2ff;
-  --color-navy: #172554;
-  --color-navy-soft: #3b4a7a;
-  --color-canvas: #ffffff;
-  --color-danger: #9b1c3a;
+  --color-white: var(--surface);
+  --color-lavender: var(--lavender);
+  --color-mint: var(--mint);
+  --color-blush: var(--blush);
+  --color-sky: var(--sky);
+  --color-navy: var(--navy);
+  --color-navy-soft: var(--navy-soft);
+  --color-canvas: var(--canvas);
+  --color-danger: var(--danger);
 
   --color-background: var(--background);
   --color-foreground: var(--foreground);
@@ -48,6 +56,17 @@
 
 :root {
   color-scheme: light;
+  --surface: rgb(252 251 255 / 0.74);
+  --page-gradient: linear-gradient(160deg, #dcd2ff 0%, #c7e4ff 45%, #c2f0e0 100%);
+  --canvas: #ffffff;
+  --navy: #172554;
+  --navy-soft: #3b4a7a;
+  --lavender: #e9e5ff;
+  --mint: #cdefe1;
+  --blush: #f8dde5;
+  --sky: #e7f2ff;
+  --danger: #9b1c3a;
+
   --background: #ffffff;
   --foreground: #172554;
   --card: #ffffff;
@@ -69,12 +88,46 @@
   --radius: 0.75rem;
 }
 
+.dark {
+  color-scheme: dark;
+  --surface: rgb(18 26 54 / 0.82);
+  --page-gradient: linear-gradient(160deg, #0b1124 0%, #111a38 55%, #0d1a2e 100%);
+  --canvas: #0b1124;
+  --navy: #e4e8ff;
+  --navy-soft: #aab4da;
+  --lavender: #2b2566;
+  --mint: #163f35;
+  --blush: #472737;
+  --sky: #1b2f52;
+  --danger: #ffb3c4;
+
+  --background: #0b1124;
+  --foreground: #e4e8ff;
+  --card: #121a36;
+  --card-foreground: #e4e8ff;
+  --popover: #121a36;
+  --popover-foreground: #e4e8ff;
+  --primary: #e4e8ff;
+  --primary-foreground: #121a36;
+  --secondary: #2b2566;
+  --secondary-foreground: #e4e8ff;
+  --muted: #1b2f52;
+  --muted-foreground: #aab4da;
+  --accent: #163f35;
+  --accent-foreground: #e4e8ff;
+  --destructive: #ffb3c4;
+  --border: rgb(228 232 255 / 0.12);
+  --input: rgb(228 232 255 / 0.22);
+  --ring: #e4e8ff;
+}
+
 @layer base {
   * {
     @apply border-border outline-ring/50;
   }
   body {
     @apply bg-background text-foreground font-sans antialiased;
+    background-image: var(--page-gradient);
   }
   h1,
   h2,

@@ -9,6 +9,7 @@ import {
   Smile,
   Moon,
 } from "lucide-react";
+import Image from "next/image";
 import Link from "next/link";
 import { ButtonLink } from "@/components/common/button-link";
 import { EmptyState } from "@/components/common/empty-state";
@@ -138,42 +139,56 @@ export default function DashboardPage() {
 
   return (
     <div className="space-y-6">
-      <section className="relative overflow-hidden rounded-3xl bg-linear-to-br from-lavender via-white to-sky p-6 sm:p-8">
-        <p className="text-sm font-medium text-navy-soft">
-          {now.toLocaleDateString(undefined, {
-            weekday: "long",
-            day: "numeric",
-            month: "long",
-          })}
-        </p>
-        <h1 className="mt-2 text-3xl font-semibold tracking-tight sm:text-4xl">
-          Hello, {firstName}. How are you feeling today?
-        </h1>
-        <p className="mt-2 max-w-xl text-navy-soft">
-          {todays
-            ? `You checked in today at ${todays.recordedTime}: ${todays.mood}, stress ${todays.stress}/10.`
-            : "A quick check-in helps you notice patterns over time."}
-        </p>
+      <section className="relative overflow-hidden rounded-3xl bg-linear-to-br from-lavender via-sky to-mint p-6 sm:p-8">
+        <div className="grid items-center gap-6 md:grid-cols-[1fr_auto]">
+          <div className="min-w-0">
+            <p className="text-sm font-medium text-navy-soft">
+              {now.toLocaleDateString(undefined, {
+                weekday: "long",
+                day: "numeric",
+                month: "long",
+              })}
+            </p>
+            <h1 className="mt-2 text-3xl font-semibold tracking-tight sm:text-4xl">
+              Hello, {firstName}. How are you feeling today?
+            </h1>
+            <p className="mt-2 max-w-xl text-navy-soft">
+              {todays
+                ? `You checked in today at ${todays.recordedTime}: ${todays.mood}, stress ${todays.stress}/10.`
+                : "A quick check-in helps you notice patterns over time."}
+            </p>
 
-        <ul
-          className="mt-5 flex flex-wrap gap-2"
-          aria-label="Quick mood check-in"
-        >
-          {MOOD_OPTIONS.map((mood) => (
-            <li key={mood}>
-              <Link
-                href={`/mood?mood=${mood}`}
-                className="inline-flex min-h-11 items-center rounded-full bg-white px-4 text-sm font-medium shadow-sm transition-colors hover:bg-navy hover:text-white"
-              >
-                {mood}
-              </Link>
-            </li>
-          ))}
-        </ul>
-        <div className="mt-5">
-          <ButtonLink href="/mood">
-            {todays ? "Update check-in" : "Save check-in"}
-          </ButtonLink>
+            <ul
+              className="mt-5 flex flex-wrap gap-2"
+              aria-label="Quick mood check-in"
+            >
+              {MOOD_OPTIONS.map((mood) => (
+                <li key={mood}>
+                  <Link
+                    href={`/mood?mood=${mood}`}
+                    className="inline-flex min-h-11 items-center rounded-full bg-white px-4 text-sm font-medium shadow-sm transition-colors hover:bg-navy hover:text-white"
+                  >
+                    {mood}
+                  </Link>
+                </li>
+              ))}
+            </ul>
+            <div className="mt-5">
+              <ButtonLink href="/mood">
+                {todays ? "Update check-in" : "Save check-in"}
+              </ButtonLink>
+            </div>
+          </div>
+
+          <Image
+            src="/illustrations/brain.svg"
+            alt=""
+            aria-hidden="true"
+            width={340}
+            height={260}
+            unoptimized
+            className="mx-auto hidden h-auto w-56 md:block lg:w-72"
+          />
         </div>
       </section>
 
