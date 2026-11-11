@@ -8,6 +8,7 @@ import {
 } from "lucide-react";
 import Link from "next/link";
 import { ButtonLink } from "@/components/common/button-link";
+import { ThemeToggle } from "@/components/common/theme-toggle";
 import { Logo } from "@/components/layout/logo";
 
 // Landing page. Makes no clinical claims: MindBridge is a wellness and connection platform, not a diagnosis or emergency service.
@@ -36,6 +37,7 @@ export default function LandingPage() {
       <header className="flex items-center justify-between px-4 py-5 sm:px-8">
         <Logo />
         <nav aria-label="Account" className="flex items-center gap-1">
+          <ThemeToggle />
           <Link
             href="/login"
             className="inline-flex min-h-11 items-center px-3 font-medium underline-offset-4 hover:underline"

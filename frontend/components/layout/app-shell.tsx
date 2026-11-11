@@ -25,6 +25,7 @@ import {
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import { Suspense, useEffect, useState, type ReactNode } from "react";
+import { ThemeToggle } from "@/components/common/theme-toggle";
 import { Button } from "@/components/ui/button";
 import { useStore } from "@/lib/store";
 import type { Role } from "@/lib/types";
@@ -200,6 +201,7 @@ function ShellFrame({ role, children }: { role: Role; children: ReactNode }) {
               )}
             </Link>
           )}
+          <ThemeToggle showLabel className="w-full" />
           <p className="px-3 text-navy-soft">
             Signed in as{" "}
             <span className="font-medium text-navy">{me?.name}</span>
@@ -235,6 +237,7 @@ function ShellFrame({ role, children }: { role: Role; children: ReactNode }) {
                 )}
               </Link>
             )}
+            <ThemeToggle />
             <span className="text-xs text-navy-soft">{LABEL[role]}</span>
             <button
               type="button"

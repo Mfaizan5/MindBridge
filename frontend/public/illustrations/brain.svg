@@ -1,0 +1,89 @@
+<svg xmlns="http://www.w3.org/2000/svg"
+     viewBox="0 0 340 260"
+     fill="none"
+     role="img"
+     aria-label="Soft lavender and blue brain illustration">
+
+  <defs>
+    <linearGradient id="brainGradient" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#D9C8FF"/>
+      <stop offset="50%" stop-color="#ADA6F3"/>
+      <stop offset="100%" stop-color="#83BDF5"/>
+    </linearGradient>
+
+    <linearGradient id="rightGradient" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#E4D9FF"/>
+      <stop offset="100%" stop-color="#8ABCF3"/>
+    </linearGradient>
+
+    <filter id="softShadow" x="-30%" y="-30%" width="160%" height="170%">
+      <feGaussianBlur in="SourceAlpha" stdDeviation="7"/>
+      <feOffset dy="6"/>
+      <feComponentTransfer>
+        <feFuncA type="linear" slope="0.17"/>
+      </feComponentTransfer>
+      <feMerge>
+        <feMergeNode/>
+        <feMergeNode in="SourceGraphic"/>
+      </feMerge>
+    </filter>
+  </defs>
+
+  <circle cx="170" cy="124" r="104" fill="#AFA4F5" opacity=".10"/>
+
+  <g filter="url(#softShadow)"
+     stroke="#7774CE"
+     stroke-width="3.2"
+     stroke-linecap="round"
+     stroke-linejoin="round">
+
+    <path d="M165 66 C153 46 128 42 111 54
+      C93 46 75 61 78 80
+      C59 87 56 108 69 121
+      C54 138 65 159 82 164
+      C81 184 101 194 119 184
+      C133 199 153 190 165 177 Z"
+      fill="url(#brainGradient)"/>
+
+    <path d="M169 66 C182 46 205 42 223 54
+      C242 46 260 61 257 80
+      C276 87 279 108 266 121
+      C281 138 270 159 253 164
+      C254 184 234 194 216 184
+      C202 199 181 190 169 177 Z"
+      fill="url(#rightGradient)"/>
+
+    <path d="M167 65 C164 88 172 103 166 121
+      C162 140 172 158 167 179"
+      stroke="#6968B8" stroke-width="3.5"/>
+
+    <g fill="none" stroke-width="2.8">
+      <path d="M110 57 C108 70 122 76 132 70 C143 65 150 73 147 84"/>
+      <path d="M79 88 C94 79 105 88 104 101 C103 112 89 114 82 108"/>
+      <path d="M69 128 C86 118 103 126 104 140 C105 151 94 157 83 153"/>
+      <path d="M110 181 C105 168 119 157 130 162 C143 167 148 179 142 188"/>
+      <path d="M119 87 C111 99 120 113 133 110 C143 108 150 117 145 129"/>
+      <path d="M104 137 C119 132 126 143 121 154"/>
+
+      <path d="M224 57 C226 70 212 76 202 70 C191 65 184 73 187 84"/>
+      <path d="M255 88 C240 79 229 88 230 101 C231 112 245 114 252 108"/>
+      <path d="M265 128 C248 118 231 126 230 140 C229 151 240 157 251 153"/>
+      <path d="M224 181 C229 168 215 157 204 162 C191 167 186 179 192 188"/>
+      <path d="M215 87 C223 99 214 113 201 110 C191 108 184 117 189 129"/>
+      <path d="M230 137 C215 132 208 143 213 154"/>
+    </g>
+  </g>
+
+  <g fill="#8C83DE">
+    <circle cx="75" cy="51" r="4" opacity=".7"/>
+    <circle cx="268" cy="67" r="5" opacity=".65"/>
+    <circle cx="276" cy="174" r="3.5"/>
+    <circle cx="60" cy="178" r="3" opacity=".6"/>
+  </g>
+
+  <path d="M111 35 V23 M105 29 H117
+           M250 37 V25 M244 31 H256"
+        stroke="#9D91E8"
+        stroke-width="2"
+        stroke-linecap="round"/>
+</svg>

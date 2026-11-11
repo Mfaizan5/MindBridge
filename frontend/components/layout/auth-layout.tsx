@@ -1,5 +1,6 @@
 import Link from "next/link";
 import type { ReactNode } from "react";
+import { ThemeToggle } from "@/components/common/theme-toggle";
 import { Logo } from "./logo";
 
 export function AuthLayout({
@@ -15,8 +16,9 @@ export function AuthLayout({
 }) {
   return (
     <div className="flex min-h-dvh flex-1 flex-col">
-      <header className="px-4 py-5 sm:px-8">
+      <header className="flex items-center justify-between px-4 py-5 sm:px-8">
         <Logo />
+        <ThemeToggle />
       </header>
       <main className="mx-auto flex w-full max-w-md flex-1 flex-col justify-center px-4 pb-12 sm:px-6">
         <div className="rounded-card border border-border bg-white p-6 shadow-sm sm:p-8">
