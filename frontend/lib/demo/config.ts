@@ -1,6 +1,7 @@
 // Demo mode runs the whole app in the browser with fictional data. No request leaves the browser.
 // Turn it on with NEXT_PUBLIC_DEMO_MODE=true (for example in the Vercel project settings).
 // When the variable is unset, the app talks to the real backend as before.
+// Note: NEXT_PUBLIC_ values are read at build time, so redeploy after changing the variable.
 
 export const DEMO_MODE = process.env.NEXT_PUBLIC_DEMO_MODE === "true";
 
