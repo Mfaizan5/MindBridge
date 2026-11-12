@@ -1,6 +1,6 @@
 # MindBridge frontend
 
-Next.js 16 (App Router) with React 19, TypeScript, Tailwind CSS, shadcn/ui, React Hook Form, Zod and Recharts.
+Next.js 16 (App Router) with React 19, TypeScript, Tailwind CSS, shadcn/ui, React Hook Form, Zod and Recharts......
 
 The frontend needs the backend running on `http://127.0.0.1:8000`. Requests to `/api/v1` are forwarded there by `next.config.ts` (set `API_ORIGIN` to use another address).
 
