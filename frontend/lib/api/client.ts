@@ -1,3 +1,6 @@
+import { DEMO_MODE } from "@/lib/demo/config";
+import { demoApi } from "@/lib/demo/demo-api";
+
 // Typed client for the MindBridge API. Every request goes to the same origin (/api/v1/...), and Next.js
 // forwards it to the backend (see next.config.ts). The session lives in an HTTP-only cookie that JavaScript
 // cannot read. The CSRF token is kept in memory only, never in localStorage.
@@ -43,6 +46,9 @@ export async function api<T>(
   path: string,
   body?: unknown,
 ): Promise<T> {
+  // Demo mode answers inside the browser and never sends a request to a server.
+  if (DEMO_MODE) return demoApi<T>(method, path, body);
+
   const headers: Record<string, string> = {};
   if (body !== undefined) headers["Content-Type"] = "application/json";
   if (method !== "GET" && csrfToken) headers["X-CSRF-Token"] = csrfToken;

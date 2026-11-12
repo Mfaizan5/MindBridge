@@ -14,6 +14,13 @@ import { Label } from "@/components/ui/label";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { useStore } from "@/lib/store";
 import { signInSchema, type SignInValues } from "@/lib/schemas/auth";
+import {
+  DEMO_ACCOUNTS,
+  DEMO_MODE,
+  DEMO_PASSWORD,
+  type DemoAccount,
+} from "@/lib/demo/config";
+import { resetDemoData } from "@/lib/demo/demo-api";
 
 // The server checks the password and the role. Accounts are created by students and psychologists at sign-up.
 // Administrator accounts are created by the seed script (development) or by an administrator (later).
@@ -40,6 +47,21 @@ function LoginForm() {
   });
   const { register, handleSubmit, formState, control } = form;
   const errors = formState.errors;
+
+  // Demo mode only: one click signs in as a fictional account.
+  const demoSignIn = async (account: DemoAccount) => {
+    setFormError(null);
+    const result = await actions.signIn(
+      account.email,
+      account.role,
+      DEMO_PASSWORD,
+    );
+    if (!result.ok) {
+      setFormError(result.error);
+      return;
+    }
+    router.push(HOME_FOR_ROLE[result.value.role]);
+  };
 
   const submit = handleSubmit(async (values) => {
     setFormError(null);
@@ -74,6 +96,52 @@ function LoginForm() {
       }
     >
       <div className="space-y-5">
+        {DEMO_MODE && (
+          <section
+            aria-labelledby="demo-accounts-heading"
+            className="space-y-3 rounded-xl border border-navy/20 p-4"
+          >
+            <div className="space-y-1">
+              <h2 id="demo-accounts-heading" className="text-sm font-semibold">
+                Demo accounts
+              </h2>
+              <p className="text-sm text-navy-soft">
+                This demo runs entirely in your browser with fictional data.
+                Nothing is sent to a server. Password for every account:{" "}
+                <span className="font-mono">{DEMO_PASSWORD}</span>
+              </p>
+            </div>
+            <div className="grid gap-2">
+              {DEMO_ACCOUNTS.map((account) => (
+                <Button
+                  key={account.email}
+                  type="button"
+                  variant="outline"
+                  className="h-auto min-h-11 justify-start py-2 text-left"
+                  disabled={formState.isSubmitting}
+                  onClick={() => demoSignIn(account)}
+                >
+                  <span className="flex flex-col items-start">
+                    <span className="font-medium">{account.label}</span>
+                    <span className="text-xs font-normal text-navy-soft">
+                      {account.description}
+                    </span>
+                  </span>
+                </Button>
+              ))}
+            </div>
+            <button
+              type="button"
+              className="text-sm font-medium underline underline-offset-4"
+              onClick={() => {
+                resetDemoData();
+                window.location.reload();
+              }}
+            >
+              Reset demo data
+            </button>
+          </section>
+        )}
         {sessionExpired && (
           <Notice tone="warning">
             Your session ended after 30 minutes without activity. Please log in
